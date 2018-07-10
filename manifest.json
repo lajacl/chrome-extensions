@@ -1,29 +1,18 @@
 {
     "manifest_version": 2,
-    "name": "Social Timeout",
-    "version": "1.0",    
-    "default_locale": "en",
-    "description": "Allows guardians to block or set a time limit for social media or any chosen websites viewing by children",
+    "name": "Web Mentor",
+    "version": "1.0",
+    "description": "Allows guardians to block or set a time limit for social media or any chosen websites. This restricts internet web accces to children. A message to do something more productive can be shown when the limit is reached. The user can be redirected to a site of the parent's choice",
     "icons": {
-        "16": "images/icon_16.png",
-        "32": "images/icon_32.png",
-        "48": "images/icon_48.png",
-        "128": "images/icon_128.png"
+        "16": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
     },    
     "browser_action": {
-        "default_icons": {
-            "16": "images/icon_16.png",
-            "32": "images/icon_32.png",
-            "48": "images/icon_48.png",
-            "128": "images/icon_128.png"
-        }
+        "default_icon": "icon.png"
     },  
     "background": {
-        "scripts": ["background.js"],
-        "persistent": false
-    },   
-    "chrome_url_overrides": {
-        "history": "history.html"
+        "scripts": ["background.js"]
     },
     "commands": {
         "toggle-timeout": {
@@ -41,22 +30,11 @@
             "linux": "Ctrl+Shift+S"
           }
         }
-    },    
-    "event_rules": [{
-        "event": "declarativeContent.onPageChanged",
-        "actions": [{
-          "type": "declarativeContent.ShowPageAction"
-        }],
-        "conditions": [{
-          "type": "declarativeContent.PageStateMatcher"
-        }]
-      }],
-    "homepage_url": "http://socialtimeout.web.applifylife.com",
+    },
+    "homepage_url": "http://webmentor.web.applifylife.com",
     "incognito": "split",
     "permissions": ["storage",
-        "activeTabs",
         "alarms",
-        "declarativeContent",
         "*://*.facebook.com/*",
         "*://*.messenger.com/*",
         "*://*.instagram.com/*",
