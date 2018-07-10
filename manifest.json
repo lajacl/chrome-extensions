@@ -1,0 +1,77 @@
+{
+    "manifest_version": 2,
+    "name": "Social Timeout",
+    "version": "1.0",    
+    "default_locale": "en",
+    "description": "Allows guardians to block or set a time limit for social media or any chosen websites viewing by children",
+    "icons": {
+        "16": "images/icon_16.png",
+        "32": "images/icon_32.png",
+        "48": "images/icon_48.png",
+        "128": "images/icon_128.png"
+    },    
+    "browser_action": {
+        "default_icons": {
+            "16": "images/icon_16.png",
+            "32": "images/icon_32.png",
+            "48": "images/icon_48.png",
+            "128": "images/icon_128.png"
+        }
+    },  
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": false
+    },   
+    "chrome_url_overrides": {
+        "history": "history.html"
+    },
+    "commands": {
+        "toggle-timeout": {
+          "suggested_key": {
+            "default": "Alt+S",
+            "mac": "Alt+S"
+          },
+          "description": "Toggle restrictions"
+        },
+        "_execute_browser_action": {
+          "suggested_key": {
+            "windows": "Ctrl+Shift+S",
+            "mac": "Command+Shift+S",
+            "chromeos": "Ctrl+Shift+S",
+            "linux": "Ctrl+Shift+S"
+          }
+        }
+    },    
+    "event_rules": [{
+        "event": "declarativeContent.onPageChanged",
+        "actions": [{
+          "type": "declarativeContent.ShowPageAction"
+        }],
+        "conditions": [{
+          "type": "declarativeContent.PageStateMatcher"
+        }]
+      }],
+    "homepage_url": "http://socialtimeout.web.applifylife.com",
+    "incognito": "split",
+    "permissions": ["storage",
+        "activeTabs",
+        "alarms",
+        "declarativeContent",
+        "*://*.facebook.com/*",
+        "*://*.messenger.com/*",
+        "*://*.instagram.com/*",
+        "*://*.twitter.com/*",
+        "*://*.whatsapp.com/*",
+        "*://*.youtube.com/*",
+        "*://*.vimeo.com/*",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "options_page": "options.html",
+    "options_ui": {
+        "chrome_style": true,
+        "page": "options.html",
+        "open_in_tab": false
+    }
+
+}
