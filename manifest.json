@@ -9,6 +9,7 @@
         "128": "icon.png"
     },    
     "browser_action": {
+        "default_title": "Web Mentor: View Browsing Data",
         "default_icon": "icon.png"
     },  
     "background": {
@@ -31,17 +32,11 @@
           }
         }
     },
-    "homepage_url": "http://webmentor.web.applifylife.com",
+    "homepage_url": "http://applifylife.com",
     "incognito": "split",
     "permissions": ["storage",
         "alarms",
-        "*://*.facebook.com/*",
-        "*://*.messenger.com/*",
-        "*://*.instagram.com/*",
-        "*://*.twitter.com/*",
-        "*://*.whatsapp.com/*",
-        "*://*.youtube.com/*",
-        "*://*.vimeo.com/*",
+        "<all_urls>",
         "webRequest",
         "webRequestBlocking"
     ],
