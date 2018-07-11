@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+        </style>
+    </head>
+    <body>
+        <h3>Web Mentor Options</h3>
+        <div>
+            <form>
+                <p>Select blocking mode:<br/>
+                <input type="radio" name="block_mode" value="timer"/>Timer then Block
+                <input type="radio" name="block_mode" value="block"/>Block Always
+                </p>
+                                <p>
+                    Set time until websites get blocked (leave empty to Block Always):<br/>
+                    <input type="number" name="time_amount" size="5"/>
+                    <select name="time_unit">
+                        <option selected value="minute">Minute(s)</option>
+                        <option selected value="hour">Hour(s)</option>
+                    </select>
+                    per                    
+                    <select name="time_length">
+                            <option selected value="day">Day</option>
+                            <option selected value="week">Week</option>
+                            <option selected value="month">Month</option>
+                    </select>
+                </p>
+
+                <p>
+                    Pick the websites to be blocked:<br/>
+                    <input type="checkbox" name="blocked_sites" value"facebook" checked/>Facebook<br/>
+                    <input type="checkbox" name="blocked_sites" value"instagram" checked/>Instagram<br/>
+                    <input type="checkbox" name="blocked_sites" value"twitter" checked/>Twitter<br/>
+                    <input type="checkbox" name="blocked_sites" value"youtube" checked/>Youtube<br/>
+                    <input type="checkbox" name="blocked_sites" value"vimeo" checked/>Vimeo<br/>
+                    <input type="checkbox" name="blocked_sites" value"messanger" checked/>Messenger<br/>
+                    <input type="checkbox" name="blocked_sites" value"whatsapp" checked/>What's App<br/>
+                    <input type="checkbox" name="blocked_sites" value"pinterest"/>Pinterest<br/>
+                    <input type="checkbox" name="blocked_sites" value"reddit"/>Reddit<br/>
+                    <input type="checkbox" name="blocked_sites" value"google+"/>Google+<br/>
+                    <input type="checkbox" name="blocked_sites" value"tumblr"/>Tumblr<br/>
+
+                    Enter another wesite to block: 
+                    <input type="url" name="added_site" size="30" placeholder="examplesite.com"/>
+                </p>
+
+                <p>
+                    Choose a block method:<br/>
+                    <input type="radio" name="block_method" value="close"/>close tab/window
+                    <input type="radio" name="block_method" value="redirect"/>send to another website (enter below)<br/>
+                    Website to redirect to: 
+                    <input type="url" name="redirect_url" size="30"/>
+                </p>
+
+                <p>
+                    Message that shows when time is up:<br/>
+                    <textarea name="blocked_messge" cols="50" rows="5"></textarea>
+                </p>
+            </form>
+        </div>
+    </body>
+    <script></script>
+</html>
