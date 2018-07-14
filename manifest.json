@@ -10,18 +10,19 @@
     },    
     "browser_action": {
         "default_title": "Web Mentor: View Browsing Data",
-        "default_icon": "icon.png"
+        "default_icon": "icon.png",
+        "default_popup": "popup.html"
     },  
     "background": {
         "scripts": ["background.js"]
     },
     "commands": {
-        "toggle-timeout": {
+        "alert_toggle": {
           "suggested_key": {
             "default": "Alt+S",
             "mac": "Alt+S"
           },
-          "description": "Toggle restrictions"
+          "description": "Set Alert"
         },
         "_execute_browser_action": {
           "suggested_key": {
@@ -29,14 +30,16 @@
             "mac": "Command+Shift+S",
             "chromeos": "Ctrl+Shift+S",
             "linux": "Ctrl+Shift+S"
-          }
+          },
+          "description": "View Web Usage"
         }
     },
-    "homepage_url": "http://applifylife.com",
+    "homepage_url": "http://webmentor.web.applifylife.com",
     "incognito": "split",
     "permissions": ["storage",
         "alarms",
         "<all_urls>",
+        "notifications",
         "webRequest",
         "webRequestBlocking"
     ],

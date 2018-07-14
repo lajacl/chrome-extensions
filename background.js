@@ -1,11 +1,10 @@
 let url
-let time = 6 * 60;
+let time = .1 * 60;
 let countDown;
 let intervalTime = 1000;
 let redirectUrl = 'https://www.google.com';
-let siteBlocked;
 
-const badge_colors = {
+const statusColors = {
     green: '#0C0',
     yellow: '#FC3',
     red: '#C00',
@@ -32,6 +31,28 @@ let url_bases = [
     'vimeo.com'
 ]
 
+function showNotification() {
+    let defaultMessage = {message: 'Have you finished your homework?'};
+    chrome.storage.sync.get({savedOptions: defaultMessage}, function(data) {
+        let message = data.savedOptions.message;
+
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icon.png',
+            title: 'Uh Oh! Web Time Limit Reached.\nHave a good rest of the day!',
+            message: message,
+            buttons: [
+                {title: 'OK'}
+            ],
+            priority: 2
+        }, function(notificationId) {
+            chrome.notifications.onButtonClicked.addListener(function (notificationId, buttonIndex) {
+                chrome.notifications.clear(notificationId);
+            });
+        });
+    });
+}
+
 function setTimeString() {
     let timeString;
 
@@ -39,16 +60,25 @@ function setTimeString() {
         // intervalTime = 3600000;
         let secToHr = (time / 60 / 60).toPrecision(2);     
         timeString = ('0000' + secToHr + 'h').slice(-4);        
-        setBadge(timeString, badge_colors.green);
+        setBadge(timeString, statusColors.green);
     } else if(time >= (5 * 60)) {
         // intervalTime = 60000;
-        let secToMin = Math.round(time / 60)
+        let secToMin = Math.round(time / 60);
         timeString = ('0000' + secToMin + 'm').slice(-4);      
-        setBadge(timeString, badge_colors.green);
-    } else {
+        setBadge(timeString, statusColors.green);
+    } else if(time > 0){
         // intervalTime = 1000;
         timeString = ('0000' + time + 's').slice(-4);      
-        setBadge(timeString, badge_colors.yellow);
+        setBadge(timeString, statusColors.yellow);
+    } else {                       
+        timeString = ('000s');       
+        setBadge(timeString, statusColors.red);
+        if(countDown && countDown !== null){
+            console.log('Clear Timer');
+            clearInterval(countDown);
+            countDown = null; 
+        }
+        showNotification();
     };
 }
 
@@ -58,41 +88,30 @@ function setBadge(text, color) {
 }
 
 function startTimer() {    
-    countDown = setInterval(function() {   
-        if(time > 0) {
-            console.log('Current time: ' + time);
-            time--;
-            setTimeString();
-            if(time == 0) {                
-                chrome.browserAction.setBadgeBackgroundColor({color: badge_colors.red});
-            }
-        } else {     
-            if(countDown){
-                clearInterval(countDown);
-                countDown = null; 
-            }
-        }   
+    countDown = setInterval(function() { 
+        time--;
+        setTimeString();
     }, intervalTime)
 }
 
 function doBlock() {        
-    if(typeof redirectUrl !== 'undefined') {
+    if(redirectUrl) {
         return {redirectUrl: redirectUrl};
     } else {
         return {cancel: true};
     }
 }
 
-function stopTimer() { 
+function pauseTimer() {
     if(!siteBlocked) {
         clearInterval(countDown);
         countDown = null
-        chrome.browserAction.setBadgeBackgroundColor({color: badge_colors.gray});
+        chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
     }
 }
 
 chrome.runtime.onInstalled.addListener(function() {
-    setBadge('-', badge_colors.gray);
+    setBadge('-', statusColors.gray);
     // chrome.storage.sync.get('time', function(data) {
         // timerMinutes = data.timerSettings.minutesLeft;
     //     if (minutes != null) {
@@ -105,16 +124,15 @@ chrome.runtime.onInstalled.addListener(function() {
 
 chrome.webRequest.onBeforeRequest.addListener(
 function(details) { 
+    let siteBlocked = false;
     url = details.url;    
     console.log('Website Requested: ' + url);
-    siteBlocked = false;
        
     url_bases.forEach(function(blockedUrl) {
         if (url.indexOf(blockedUrl) !== -1) {
             console.log('Flagged: ' + url);
             siteBlocked = true;
-            console.log('countDown: ' + countDown);
-            if(!countDown || countDown === null){
+            if((!countDown || countDown === null) && time !== 0){
                 console.log('Starting Timer!')
                 startTimer();
             }
@@ -122,11 +140,14 @@ function(details) {
     });
     
     if (time <= 0 && siteBlocked) {
-        doBlock();
+        return doBlock();
      } else if(siteBlocked) {
         
      } else {
-        stopTimer()
+        if((countDown && countDown !== null)) {            
+            console.log('Pausing Timer');
+            pauseTimer();
+        }
      }
 },
 // filters
