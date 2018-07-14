@@ -1,63 +1,95 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>Web Mentor Options</title>
         <style>
+            body {
+                padding: 10px;
+                min-width: 400px;
+            }
+            .label {
+                font-weight: bold;
+            }
+            #status {
+                color: #cc0000;
+                font-weight: bold;
+                text-transform: uppercase;
+                text-align: center;
+            }
+            #submit {
+                text-align: center;
+            }
         </style>
     </head>
     <body>
-        <h3>Web Mentor Options</h3>
+        <h1>Options</h1>
+
         <div>
-            <form>
-                <p>Select blocking mode:<br/>
-                <input type="radio" name="block_mode" value="timer"/>Timer then Block
-                <input type="radio" name="block_mode" value="block"/>Block Always
+                <p id="mode-block"><span class="label">Select blocking mode:</span><br/>
+                    <input type="radio" name="block-mode" value="timer"/>&nbsp;Timer then Block&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="radio" name="block-mode" value="blocked"/>&nbsp;Always Block
                 </p>
-                                <p>
-                    Set time until websites get blocked (leave empty to Block Always):<br/>
-                    <input type="number" name="time_amount" size="5"/>
-                    <select name="time_unit">
-                        <option selected value="minute">Minute(s)</option>
-                        <option selected value="hour">Hour(s)</option>
+                
+                <p id="time-block"><span class="label">Set amount of time until websites get blocked:</span><br/>
+                    (leave empty for Always Block)<br/>
+                    <input type="number" id="time-length" size="5"/>&nbsp;&nbsp;&nbsp;
+                    <select id="time-unit">
+                        <option value="minute">Minute(s)</option>
+                        <option value="hour">Hour(s)</option>
                     </select>
-                    per                    
-                    <select name="time_length">
-                            <option selected value="day">Day</option>
-                            <option selected value="week">Week</option>
-                            <option selected value="month">Month</option>
+                    &nbsp;per&nbsp;
+                    <select id="time-period">
+                            <option value="day">Day</option>
+                            <option value="week">Week</option>
+                            <option value="month">Month</option>
                     </select>
                 </p>
 
-                <p>
-                    Pick the websites to be blocked:<br/>
-                    <input type="checkbox" name="blocked_sites" value"facebook" checked/>Facebook<br/>
-                    <input type="checkbox" name="blocked_sites" value"instagram" checked/>Instagram<br/>
-                    <input type="checkbox" name="blocked_sites" value"twitter" checked/>Twitter<br/>
-                    <input type="checkbox" name="blocked_sites" value"youtube" checked/>Youtube<br/>
-                    <input type="checkbox" name="blocked_sites" value"vimeo" checked/>Vimeo<br/>
-                    <input type="checkbox" name="blocked_sites" value"messanger" checked/>Messenger<br/>
-                    <input type="checkbox" name="blocked_sites" value"whatsapp" checked/>What's App<br/>
-                    <input type="checkbox" name="blocked_sites" value"pinterest"/>Pinterest<br/>
-                    <input type="checkbox" name="blocked_sites" value"reddit"/>Reddit<br/>
-                    <input type="checkbox" name="blocked_sites" value"google+"/>Google+<br/>
-                    <input type="checkbox" name="blocked_sites" value"tumblr"/>Tumblr<br/>
-
-                    Enter another wesite to block: 
-                    <input type="url" name="added_site" size="30" placeholder="examplesite.com"/>
+                <hr/>
+                <p id="websites-block"><span class="label">Choose the websites to be blocked:</span><br/>
+                    <input type="checkbox" name="website" value"facebook" checked/>Facebook<br/>
+                    <input type="checkbox" name="website" value"instagram" checked/>Instagram<br/>
+                    <input type="checkbox" name="website" value"twitter" checked/>Twitter<br/>
+                    <input type="checkbox" name="website" value"youtube" checked/>Youtube<br/>
+                    <input type="checkbox" name="website" value"vimeo" checked/>Vimeo<br/>
+                    <input type="checkbox" name="website" value"messanger" checked/>Messenger<br/>
+                    <input type="checkbox" name="website" value"whatsapp" checked/>What's App<br/>
+                    <input type="checkbox" name="website" value"pinterest"/>Pinterest<br/>
+                    <input type="checkbox" name="website" value"reddit"/>Reddit<br/>
+                    <input type="checkbox" name="website" value"google+"/>Google+<br/>
+                    <input type="checkbox" name="website" value"tumblr"/>Tumblr<br/>                    
                 </p>
 
-                <p>
-                    Choose a block method:<br/>
-                    <input type="radio" name="block_method" value="close"/>close tab/window
-                    <input type="radio" name="block_method" value="redirect"/>send to another website (enter below)<br/>
-                    Website to redirect to: 
-                    <input type="url" name="redirect_url" size="30"/>
+                <p id="new-site-block">
+                    <span class="label">Enter another wesite to block:</span>
+                    <input type="url" id="new-site" size="30" placeholder="https://www.google.com"/>&nbsp;&nbsp;&nbsp;
+                    <button id="new-site-btn">Block Website</button>
                 </p>
 
-                <p>
-                    Message that shows when time is up:<br/>
-                    <textarea name="blocked_messge" cols="50" rows="3"></textarea>
+                <hr/>
+                <p id="method-block"><span class="label">Pick a block method:</span><br/>
+                    <input type="radio" name="block-method" value="close"/>&nbsp;Close tab/window&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    <input type="radio" name="block-method" value="redirect"/>&nbsp;Redirect to another website<br/>
+
+                    <div id="set-redirect">
+                        <span class="label">Website to redirect to:</span><br/>
+                        *IDEAS: school website for homework, other educational website<br/>
+                        <input type="url" id="redirect-url" size="40"/>
+                    </div>
                 </p>
-            </form>
+
+                <hr/>
+                <p id="message-block"><span class="label">Message that shows when time is up:</span>(optional)<br/>
+                    *IDEAS: words of love and encouragment, a joke, a list of chores<br/>
+                    <textarea id="new-message" cols="50" rows="3" placeholder="I love you, let's go outside and play this week. -MOM"></textarea><br/>
+                    <button id="new-message-btn">Add Message</button>
+                </p>
+
+                <p id="status"></p>
+
+                <p id="submit">
+                    <button type="submit" id="save-btn">Save</button>
+                </p>
         </div>
     </body>
     <script src="options.js"></script>
