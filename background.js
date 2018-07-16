@@ -154,7 +154,7 @@ function getActiveTab() {
 
 chrome.runtime.onInstalled.addListener(function() {
     setTimeString();
-    // chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
+    chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
     // setBadge('-', statusColors.gray);
     // chrome.storage.sync.get(['timerSettings', 'restrictedUrls'], function(data) {
         // timerMinutes = data.timerSettings.minutesLeft;
@@ -211,3 +211,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     console.log('Tab: onUpdated');
     checkActiveTab();
 });
+
+chrome.windows.onFocusChanged.addListener(function(windowId) {
+    if(windowId !== chrome.windows.WINDOW_ID_NONE) {
+        console.log('Window: onFocusChanged');
+        checkActiveTab();
+    }
+})
