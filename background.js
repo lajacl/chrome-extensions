@@ -1,4 +1,4 @@
-let time = 180 * 60;
+let time = .1 * 60;
 let countDown;
 let intervalTime = 1000;
 // let redirectUrl;
@@ -76,7 +76,6 @@ function setTimeString() {
         timeString = ('0000' + time + 's').slice(-4);       
         setBadge(timeString, statusColors.red);
         if(countDown && countDown !== null){
-            console.log('Clear Timer');
             clearInterval(countDown);
             countDown = null; 
         }
@@ -113,18 +112,26 @@ function pauseTimer() {
 }
 
 function doBlock(currentTab) {    
-    console.log('Doing Blocking');  
+    // console.log('Doing Blocking');  
     if(redirectUrl) {
-        return {redirectUrl: redirectUrl};
+        // return {redirectUrl: redirectUrl};
+        if (currentTab) {
+            console.log('Yes Current Tab to Block');            
+            chrome.tabs.update(currentTab.id, {url: redirectUrl});
+        } else {
+            console.log('NO Current Tab to Block');
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            if(tabs){
+                chrome.tabs.update(tabs[0].id, {url: redirectUrl});
+            }
+          });        
+        }
     } else {
         setTimeout(function() {
         // return {cancel: true};
-            console.log('In setTimeout');
             if(currentTab) {
-                console.log('Tab Param');
                 chrome.tabs.remove(currentTab.id);
             } else {
-                console.log('No Tab Param')
                     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
                         activeTab = tabs[0];
                         if(activeTab) {
@@ -139,7 +146,7 @@ function doBlock(currentTab) {
 function isRestricted(urlRequest) {  
     for(let i=0; i<restrictedUrls.length; i++) {
         if (urlRequest.indexOf(restrictedUrls[i]) !== -1) {
-            console.log('Flagged Website: ' + urlRequest);
+            // console.log('Flagged Website: ' + urlRequest);
             return true;
         }
     }
@@ -166,29 +173,29 @@ chrome.runtime.onInstalled.addListener(function() {
     // });
 });
 
-chrome.webRequest.onBeforeRequest.addListener(
-function(details) {    
-    if(time <= 0) {
-        console.log('In Web Request');
-        return doBlock();
-    }
-},
-// filters
-{
-    urls: urlPatterns,
-    types: ['main_frame']
-},
-// extraInfoSpec
-['blocking']
-);
+// chrome.webRequest.onBeforeRequest.addListener(
+// function(details) {    
+//     if(time <= 0) {
+//         console.log('In Web Request');
+//         return doBlock();
+//     }
+// },
+// // filters
+// {
+//     urls: urlPatterns,
+//     types: ['main_frame']
+// },
+// // extraInfoSpec
+// ['blocking']
+// );
 
 function checkActiveTab() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
         activeTab = tabs[0];
         if(activeTab) {
-            console.log('Active Tab Url' + activeTab.url)
+            // console.log('Active Tab Url' + activeTab.url)
             let tabRestricted = isRestricted(activeTab.url)
-            console.log('Is restricted: ' + tabRestricted);
+            // console.log('Is restricted: ' + tabRestricted);
 
             if(time > 0 && tabRestricted) {
                 startTimer();
@@ -203,12 +210,12 @@ function checkActiveTab() {
 }  
 
 chrome.tabs.onActivated.addListener(function(activeInfo) { 
-    console.log('Tab: onActivated');
+    // console.log('Tab: onActivated');
     checkActiveTab();
 });
 
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {   
-    console.log('Tab: onUpdated');
+    // console.log('Tab: onUpdated');
     checkActiveTab();
 });
 
@@ -217,4 +224,20 @@ chrome.windows.onFocusChanged.addListener(function(windowId) {
         console.log('Window: onFocusChanged');
         checkActiveTab();
     }
-})
+},
+//filter
+{
+    windowTypes: ['normal', 'popup']
+}
+);
+
+// chrome.runtime.onMessage.addListener(
+//     function(message, sendResponse) {
+//     console.log('Receiving Message');
+//       if(message == 'redirectTab'){
+//         console.log('Trying to Redirect');
+//         chrome.tabs.executeScript({
+//             code: 'alert(About to Change Location)'// 'location.assign("http://example.com")'
+//         });
+//     }
+// });

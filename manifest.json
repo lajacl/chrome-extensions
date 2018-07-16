@@ -14,7 +14,8 @@
         "default_popup": "popup.html"
     },  
     "background": {
-        "scripts": ["background.js"]
+        "scripts": ["background.js"],
+        "persistent": false
     },
     "commands": {
         "alert_toggle": {
@@ -40,9 +41,7 @@
         "<all_urls>",
         "notifications",
         "storage",
-        "tabs",
-        "webRequest",
-        "webRequestBlocking"
+        "tabs"
     ],
     "options_page": "options.html",
     "options_ui": {
