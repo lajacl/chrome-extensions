@@ -1,27 +1,29 @@
-let url
-let time = .1 * 60;
+let time = 180 * 60;
 let countDown;
 let intervalTime = 1000;
-let redirectUrl = 'https://www.google.com';
+// let redirectUrl;
+let redirectUrl = 'https://auth.ultimatix.net/utxLogin/login?TYPE=33554432&REALMOID=06-45402d83-8994-41d4-9e1e-60a2815da6a3&GUID=&SMAUTHREASON=0&METHOD=GET&SMAGENTNAME=-SM-EdbHMX6T%2bWb8DN7DVmL5sbY%2bn%2b30S7n%2fgIBptYa9dLbudResX4AYm9ObPeNozoDH&TARGET=-SM-HTTPS%3a%2f%2fwww%2eultimatix%2enet%2fultimatixPortalWeb%2fUTXPortalRedirect%3fTARGET%3dhttps-%3A-%2F-%2Fwww%2eultimatix%2enet-%2F';
+let activeTab;
 
 const statusColors = {
-    green: '#0C0',
-    yellow: '#FC3',
-    red: '#C00',
+    green: '#090',
+    yellow: '#fc0',
+    orange: '#f60',
+    red: '#c00',
     gray: '#808080'
-}
+};
 
-// const url_patterns = [
-//     '*://*.facebook.com/*',
-//     '*://*.messenger.com/*',
-//     '*://*.instagram.com/*',
-//     '*://*.twitter.com/*',
-//     '*://*.whatsapp.com/*',
-//     '*://*.youtube.com/*',
-//     '*://*.vimeo.com/*'
-// ]
+const urlPatterns = [
+    '*://*.facebook.com/*',
+    '*://*.messenger.com/*',
+    '*://*.instagram.com/*',
+    '*://*.twitter.com/*',
+    '*://*.whatsapp.com/*',
+    '*://*.youtube.com/*',
+    '*://*.vimeo.com/*'
+]
 
-let url_bases = [
+const restrictedUrls = [
     'facebook.com',
     'messenger.com',
     'instagram.com',
@@ -29,9 +31,9 @@ let url_bases = [
     'whatsapp.com',
     'youtube.com',
     'vimeo.com'
-]
+];
 
-function showNotification() {
+function showNotification(type) {
     let defaultMessage = {message: 'Have you finished your homework?'};
     chrome.storage.sync.get({savedOptions: defaultMessage}, function(data) {
         let message = data.savedOptions.message;
@@ -39,7 +41,7 @@ function showNotification() {
         chrome.notifications.create({
             type: 'basic',
             iconUrl: 'icon.png',
-            title: 'Uh Oh! Web Time Limit Reached.\nHave a good rest of the day!',
+            title: 'Uh Oh! Web Time Limit Reached.\nWhy don\'t you rest those eyes!',
             message: message,
             buttons: [
                 {title: 'OK'}
@@ -56,7 +58,7 @@ function showNotification() {
 function setTimeString() {
     let timeString;
 
-    if(time > (999 * 60)){           
+    if(time >= (120 * 60)){           
         // intervalTime = 3600000;
         let secToHr = (time / 60 / 60).toPrecision(2);     
         timeString = ('0000' + secToHr + 'h').slice(-4);        
@@ -65,19 +67,20 @@ function setTimeString() {
         // intervalTime = 60000;
         let secToMin = Math.round(time / 60);
         timeString = ('0000' + secToMin + 'm').slice(-4);      
-        setBadge(timeString, statusColors.green);
+        setBadge(timeString, statusColors.yellow);
     } else if(time > 0){
         // intervalTime = 1000;
         timeString = ('0000' + time + 's').slice(-4);      
-        setBadge(timeString, statusColors.yellow);
+        setBadge(timeString, statusColors.orange);
     } else {                       
-        timeString = ('000s');       
+        timeString = ('0000' + time + 's').slice(-4);       
         setBadge(timeString, statusColors.red);
         if(countDown && countDown !== null){
             console.log('Clear Timer');
             clearInterval(countDown);
             countDown = null; 
         }
+        doBlock();
         showNotification();
     };
 }
@@ -88,74 +91,123 @@ function setBadge(text, color) {
 }
 
 function startTimer() {    
-    countDown = setInterval(function() { 
-        time--;
-        setTimeString();
-    }, intervalTime)
-}
-
-function doBlock() {        
-    if(redirectUrl) {
-        return {redirectUrl: redirectUrl};
-    } else {
-        return {cancel: true};
+    console.log('Starting Timer!');
+    if(time > 0 && (!countDown || countDown === null)) {
+        countDown = setInterval(function() { 
+            time--;
+            setTimeString();
+            if(time === 5 * 60) {
+                alert("Five Minutes of Web Use Left!")
+            }
+        }, intervalTime)
     }
 }
 
-function pauseTimer() {
-    if(!siteBlocked) {
+function pauseTimer() {           
+    console.log('Pausing Timer');
+    if((countDown && countDown !== null)) {
         clearInterval(countDown);
-        countDown = null
+        countDown = null;
         chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
     }
 }
 
+function doBlock(currentTab) {    
+    console.log('Doing Blocking');  
+    if(redirectUrl) {
+        return {redirectUrl: redirectUrl};
+    } else {
+        setTimeout(function() {
+        // return {cancel: true};
+            console.log('In setTimeout');
+            if(currentTab) {
+                console.log('Tab Param');
+                chrome.tabs.remove(currentTab.id);
+            } else {
+                console.log('No Tab Param')
+                    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                        activeTab = tabs[0];
+                        if(activeTab) {
+                            chrome.tabs.remove(activeTab.id);
+                        }
+                    });
+            }   
+        }, 1000);
+    }
+}
+
+function isRestricted(urlRequest) {  
+    for(let i=0; i<restrictedUrls.length; i++) {
+        if (urlRequest.indexOf(restrictedUrls[i]) !== -1) {
+            console.log('Flagged Website: ' + urlRequest);
+            return true;
+        }
+    }
+    return false;
+}
+
+function getActiveTab() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        activeTab = tabs[0];
+    });
+}
+
 chrome.runtime.onInstalled.addListener(function() {
-    setBadge('-', statusColors.gray);
-    // chrome.storage.sync.get('time', function(data) {
+    setTimeString();
+    // chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
+    // setBadge('-', statusColors.gray);
+    // chrome.storage.sync.get(['timerSettings', 'restrictedUrls'], function(data) {
         // timerMinutes = data.timerSettings.minutesLeft;
-    //     if (minutes != null) {
-    //         chrome.browserAction.setBadgeText({text: data.time + 'm'});
+    //     if (timerMinutes) {
+    //         time = timerMinutes;
     //     } else {
-    //         chrome.browserAction.setBadgeText({text: '0m'});
+    //         time = 0;
     //     }
     // });
 });
 
 chrome.webRequest.onBeforeRequest.addListener(
-function(details) { 
-    let siteBlocked = false;
-    url = details.url;    
-    console.log('Website Requested: ' + url);
-       
-    url_bases.forEach(function(blockedUrl) {
-        if (url.indexOf(blockedUrl) !== -1) {
-            console.log('Flagged: ' + url);
-            siteBlocked = true;
-            if((!countDown || countDown === null) && time !== 0){
-                console.log('Starting Timer!')
-                startTimer();
-            }
-        }
-    });
-    
-    if (time <= 0 && siteBlocked) {
+function(details) {    
+    if(time <= 0) {
+        console.log('In Web Request');
         return doBlock();
-     } else if(siteBlocked) {
-        
-     } else {
-        if((countDown && countDown !== null)) {            
-            console.log('Pausing Timer');
-            pauseTimer();
-        }
-     }
+    }
 },
 // filters
 {
-    // urls: url_patterns
-    urls: ['<all_urls>'],
+    urls: urlPatterns,
     types: ['main_frame']
 },
 // extraInfoSpec
 ['blocking']
 );
+
+function checkActiveTab() {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        activeTab = tabs[0];
+        if(activeTab) {
+            console.log('Active Tab Url' + activeTab.url)
+            let tabRestricted = isRestricted(activeTab.url)
+            console.log('Is restricted: ' + tabRestricted);
+
+            if(time > 0 && tabRestricted) {
+                startTimer();
+            }
+            if(time <= 0 && tabRestricted) {
+                doBlock(activeTab);
+            } else if(!tabRestricted && countDown && countDown !== null) { 
+                pauseTimer();        
+            }
+        }
+    });
+}  
+
+chrome.tabs.onActivated.addListener(function(activeInfo) { 
+    console.log('Tab: onActivated');
+    checkActiveTab();
+});
+
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {   
+    console.log('Tab: onUpdated');
+    checkActiveTab();
+});

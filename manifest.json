@@ -36,10 +36,11 @@
     },
     "homepage_url": "http://webmentor.web.applifylife.com",
     "incognito": "split",
-    "permissions": ["storage",
-        "alarms",
+    "permissions": [
         "<all_urls>",
         "notifications",
+        "storage",
+        "tabs",
         "webRequest",
         "webRequestBlocking"
     ],
