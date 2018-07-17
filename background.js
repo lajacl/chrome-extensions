@@ -1,8 +1,9 @@
-let time = .1 * 60;
+let time = .2 * 60;
 let countDown;
 let intervalTime = 1000;
+let restrictedUrls;
 // let redirectUrl;
-let redirectUrl = 'https://auth.ultimatix.net/utxLogin/login?TYPE=33554432&REALMOID=06-45402d83-8994-41d4-9e1e-60a2815da6a3&GUID=&SMAUTHREASON=0&METHOD=GET&SMAGENTNAME=-SM-EdbHMX6T%2bWb8DN7DVmL5sbY%2bn%2b30S7n%2fgIBptYa9dLbudResX4AYm9ObPeNozoDH&TARGET=-SM-HTTPS%3a%2f%2fwww%2eultimatix%2enet%2fultimatixPortalWeb%2fUTXPortalRedirect%3fTARGET%3dhttps-%3A-%2F-%2Fwww%2eultimatix%2enet-%2F';
+let defaultUrl = 'https://www.khanacademy.org';
 let activeTab;
 
 const statusColors = {
@@ -13,24 +14,17 @@ const statusColors = {
     gray: '#808080'
 };
 
-const urlPatterns = [
-    '*://*.facebook.com/*',
-    '*://*.messenger.com/*',
-    '*://*.instagram.com/*',
-    '*://*.twitter.com/*',
-    '*://*.whatsapp.com/*',
-    '*://*.youtube.com/*',
-    '*://*.vimeo.com/*'
-]
-
-const restrictedUrls = [
-    'facebook.com',
-    'messenger.com',
-    'instagram.com',
-    'twitter.com',
-    'whatsapp.com',
-    'youtube.com',
-    'vimeo.com'
+const defaultUrls = [
+    {url: 'facebook.com', blocked: false},
+    {url: 'messenger.com', blocked: false},
+    {url: 'instagram.com', blocked: false},
+    {url: 'twitter.com', blocked: false},
+    {url: 'whatsapp.com', blocked: false},
+    {url: 'youtube.com', blocked: false},
+    {url: 'vimeo.com', blocked: false},
+    {url: 'battle.net', blocked: false},
+    {url: 'epicgames.com', blocked: false},
+    {url: 'leagueoflegends.com', blocked: false}
 ];
 
 function showNotification(type) {
@@ -91,12 +85,12 @@ function setBadge(text, color) {
 
 function startTimer() {    
     console.log('Starting Timer!');
-    if(time > 0 && (!countDown || countDown === null)) {
+    if(!countDown || countDown === null) {
         countDown = setInterval(function() { 
             time--;
             setTimeString();
             if(time === 5 * 60) {
-                alert("Five Minutes of Web Use Left!")
+                alert("5 Minutes Left!")
             }
         }, intervalTime)
     }
@@ -111,41 +105,50 @@ function pauseTimer() {
     }
 }
 
-function doBlock(currentTab) {    
-    // console.log('Doing Blocking');  
-    if(redirectUrl) {
-        // return {redirectUrl: redirectUrl};
-        if (currentTab) {
-            console.log('Yes Current Tab to Block');            
-            chrome.tabs.update(currentTab.id, {url: redirectUrl});
-        } else {
-            console.log('NO Current Tab to Block');
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if(tabs){
-                chrome.tabs.update(tabs[0].id, {url: redirectUrl});
-            }
-          });        
-        }
+function redirectTab(redirectUrl, currentTab) {
+    if (currentTab) {
+        console.log('Yes Current Tab to Block');            
+        chrome.tabs.update(currentTab.id, {url: redirectUrl});
     } else {
-        setTimeout(function() {
-        // return {cancel: true};
-            if(currentTab) {
-                chrome.tabs.remove(currentTab.id);
-            } else {
-                    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-                        activeTab = tabs[0];
-                        if(activeTab) {
-                            chrome.tabs.remove(activeTab.id);
-                        }
-                    });
-            }   
-        }, 1000);
+        console.log('NO Current Tab to Block');
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if(tabs){
+            chrome.tabs.update(tabs[0].id, {url: redirectUrl});
+        }
+      });        
     }
 }
 
+function closeTab() {
+    setTimeout(function() {
+        if(currentTab) {
+            chrome.tabs.remove(currentTab.id);
+        } else {
+            chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+                activeTab = tabs[0];
+                if(activeTab) {
+                    chrome.tabs.remove(activeTab.id);
+                }
+            });
+        }   
+    }, 1000);}
+
+function doBlock(currentTab) {    
+    console.log('Doing Blocking');
+    chrome.storage.sync.get({redirectUrl: defaultUrl}, function(data) {
+        let redirectUrl = data.redirectUrl;
+        if(redirectUrl) {
+            redirectTab(redirectUrl, currentTab);
+        } else {
+            closeTab(currentTab);
+        }
+    })  
+}
+
 function isRestricted(urlRequest) {  
-    for(let i=0; i<restrictedUrls.length; i++) {
-        if (urlRequest.indexOf(restrictedUrls[i]) !== -1) {
+    // for(let i=0; i<restrictedUrls.length; i++) {
+    for(let restrictedUrl of restrictedUrls) {
+        if (urlRequest.toLowerCase().indexOf(restrictedUrl.url) !== -1) {
             // console.log('Flagged Website: ' + urlRequest);
             return true;
         }
@@ -160,34 +163,43 @@ function getActiveTab() {
 }
 
 chrome.runtime.onInstalled.addListener(function() {
-    setTimeString();
-    chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
-    // setBadge('-', statusColors.gray);
-    // chrome.storage.sync.get(['timerSettings', 'restrictedUrls'], function(data) {
-        // timerMinutes = data.timerSettings.minutesLeft;
-    //     if (timerMinutes) {
-    //         time = timerMinutes;
-    //     } else {
-    //         time = 0;
-    //     }
-    // });
+    chrome.storage.sync.get({
+        timerSettings: {timerMinutes: .1},
+        restrictedUrls: defaultUrls
+    }, function(data) {
+        restrictedUrls = data.restrictedUrls; 
+        timerSettings = data.timerSettings;    
+
+        if(timerSettings && timerSettings.timerMinutes)  {
+            time = timerSettings.timerMinutes * 60;
+            setTimeString();
+            chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
+        }  else {            
+        time = -1;
+        setBadge('-', statusColors.gray);
+        }
+    });
 });
 
-// chrome.webRequest.onBeforeRequest.addListener(
-// function(details) {    
-//     if(time <= 0) {
-//         console.log('In Web Request');
-//         return doBlock();
-//     }
-// },
-// // filters
-// {
-//     urls: urlPatterns,
-//     types: ['main_frame']
-// },
-// // extraInfoSpec
-// ['blocking']
-// );
+chrome.runtime.onStartup.addListener(function() {
+    console.log('onStartup Called');
+    chrome.storage.sync.get({
+        timerSettings: {timerMinutes: .1},
+        restrictedUrls: defaultUrls
+    }, function(data) {
+        restrictedUrls = data.restrictedUrls; 
+        timerSettings = data.timerSettings;    
+
+        if(timerSettings && timerSettings.timerMinutes)  {
+            time = timerSettings.timerMinutes * 60;
+            setTimeString();
+            chrome.browserAction.setBadgeBackgroundColor({color: statusColors.gray});
+        }  else {            
+        time = -1;
+        setBadge('-', statusColors.gray);
+        }
+    });
+});
 
 function checkActiveTab() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
@@ -199,8 +211,7 @@ function checkActiveTab() {
 
             if(time > 0 && tabRestricted) {
                 startTimer();
-            }
-            if(time <= 0 && tabRestricted) {
+            } else if(time === 0 && tabRestricted) {
                 doBlock(activeTab);
             } else if(!tabRestricted && countDown && countDown !== null) { 
                 pauseTimer();        
@@ -230,14 +241,3 @@ chrome.windows.onFocusChanged.addListener(function(windowId) {
     windowTypes: ['normal', 'popup']
 }
 );
-
-// chrome.runtime.onMessage.addListener(
-//     function(message, sendResponse) {
-//     console.log('Receiving Message');
-//       if(message == 'redirectTab'){
-//         console.log('Trying to Redirect');
-//         chrome.tabs.executeScript({
-//             code: 'alert(About to Change Location)'// 'location.assign("http://example.com")'
-//         });
-//     }
-// });
